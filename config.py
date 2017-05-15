@@ -1,4 +1,5 @@
 CLIENT_ID = ""
+CLIENT_SECRET = ""
+USERNAME = ""
 PASSWORD = ""
-APP_ID = ""
-APP_SECRET = ""
+USER_AGENT = ""
