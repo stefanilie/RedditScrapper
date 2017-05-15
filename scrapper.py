@@ -1,6 +1,7 @@
 import json
 import praw
 import config
+from pymongo import MongoClient
 
 def load_credentials():
     with open("passwords/accounts.json") as json_data:
@@ -18,12 +19,23 @@ def make_call():
                             user_agent = config.USER_AGENT,
                             username = config.USERNAME,
                             password = config.PASSWORD)
-        subreddit = reddit.subreddit("python")
-        print "Display name: ",subreddit.display_name
-        print "Title: ", subreddit.title
-        print "Description: ", subreddit.description
+        #First, get the submisions for the last 2 hours (of today... for now.)
+        submisions = reddit.subreddit("python").submissions(1494844431, 1494851631)
+        for sub in submisions:
+            print sub.title
     except Exception as e:
         print e.message
 
+def db_connect():
+    try:
+        client = MongoClient()
+        db = client.test
+    except Exception as e:
+        print e.message
+
+
+
 load_credentials()
 make_call()
+# db_connect()
+# make_call()
