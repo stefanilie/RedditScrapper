@@ -1,0 +1,4 @@
+CLIENT_ID = ""
+PASSWORD = ""
+APP_ID = ""
+APP_SECRET = ""
