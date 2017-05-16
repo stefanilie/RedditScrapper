@@ -102,3 +102,6 @@ ENV/
 
 #passwords
 passwords/
+
+# data
+data/
