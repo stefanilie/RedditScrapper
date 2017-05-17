@@ -3,6 +3,9 @@ import praw
 import config
 import time
 import threading
+import sched
+import time
+import SetInterval
 from pymongo import MongoClient
 
 def load_credentials():
@@ -74,7 +77,14 @@ def db_connect():
     except Exception as e:
         print e.message
 
-def set_interval(func, sec):
+# One of the first ways of trying to do the "refresh"
+# Didn't work because - I think - it wasn't able to call the second time the
+# method alongside it's parameters.
+# File "/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.py", line 1082, in run
+#       self.function(*self.args, **self.kwargs)
+# TypeError: 'NoneType' object is not callable
+def NOTUSED_set_interval(func, sec):
+    pdb.set_trace()
     def function_wrapper():
         set_interval(func, sec)
         func()
@@ -86,15 +96,26 @@ def cleanDB(db):
     db.Comments.remove({})
     db.Submissions.remove({})
 
-
 def main():
     reddit = load_credentials()
     db_conn = db_connect()
     cleanDB(db_conn)
-    thread = set_interval(make_call(reddit, db_conn, "python"), 10)
+
+    # Second way I tried to do the refresh. This time I tried sending all the parameters
+    # also didn;t work with multiple parameters at once.
+    # SetInterval(10, make_call, reddit, db_conn, "python")
+    # try:
+    #     sleep(35)
+    # finally:
+    #     thread.stop()
     # thread2 = set_interval(make_call(reddit, db_conn, "python"), 15)
 
-    # make_call(reddit, db_conn, "python")
 
+    # Finally, I gave up and did a very stupid - though working - way of
+    # handling this task. 
+    while True:
+        time.sleep(10)
+        make_call(reddit, db_conn, "python")
+        time.sleep(50)
 
 if __name__ == "__main__": main()
