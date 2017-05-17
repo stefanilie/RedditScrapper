@@ -100,6 +100,7 @@ def main():
     reddit = load_credentials()
     db_conn = db_connect()
     cleanDB(db_conn)
+    app = Flask(__name__)
 
     # Second way I tried to do the refresh. This time I tried sending all the parameters
     # also didn;t work with multiple parameters at once.
@@ -112,7 +113,7 @@ def main():
 
 
     # Finally, I gave up and did a very stupid - though working - way of
-    # handling this task. 
+    # handling this task.
     while True:
         time.sleep(10)
         make_call(reddit, db_conn, "python")
