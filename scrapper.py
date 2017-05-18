@@ -60,9 +60,14 @@ def make_call(reddit, db_conn, subreddit):
     except Exception as e:
         print e.message
 
-def stage_one(db, subreddit, t1, t2):
-    subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
-    return list(subs)
+def stage_one(db, subreddit, t1, t2, kwd=None):
+    if kwd is not None:
+        # subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}}, {"$text": {"$search": str(kwd)}})
+        subs = db.Submissions.find({"$text": {"$search": str(kwd)}})
+        return list(subs)
+    else:
+        subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
+        return list(subs)
 
 def insert_submission(db, submission):
     if db.Submissions.find_one({'id': submission['id']}):
