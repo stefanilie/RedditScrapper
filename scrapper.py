@@ -1,11 +1,14 @@
 import json
 import praw
+from praw.models import MoreComments
 import config
 import time
 import threading
 import sched
 import time
 import SetInterval
+import datetime
+import calendar
 from pymongo import MongoClient
 
 def load_credentials():
@@ -27,8 +30,10 @@ def load_credentials():
 
 def make_call(reddit, db_conn, subreddit):
     try:
-        #First, get the submisions for the last 2 hours (of today... for now.)
-        arr_submissions = reddit.subreddit(subreddit).submissions(1494844431, 1494851631)
+        #First, get the submisions for the last 2 days (for now...)
+        past = datetime.datetime.utcnow() + datetime.timedelta(days=-2)
+        past_ut = calendar.timegm(past.timetuple())
+        arr_submissions = reddit.subreddit(subreddit).submissions(past_ut, int(time.time()))
 
         for sub in arr_submissions:
             print "\n\nTitle: ", sub.title
@@ -37,21 +42,27 @@ def make_call(reddit, db_conn, subreddit):
                 'title': sub.title,
                 'selftext': sub.selftext,
                 'num_comments': sub.num_comments,
-                'created': time.time(),
+                'created': int(sub.created),
                 'subreddit': subreddit
             }
             result = insert_submission(db_conn, submission)
             print "Insert result: ", result
             for comment in sub.comments.list():
-                comm = {
-                    'id': comment.id,
-                    'body': comment.body,
-                    'sub_id': sub.id
-                }
-                result = insert_comment(db_conn, comm)
-                print "Comment insert result: ", result
+                if not isinstance(comment, MoreComments):
+                    comm = {
+                        'id': comment.id,
+                        'body': comment.body,
+                        'sub_id': sub.id,
+                        'created': int(comment.created)
+                    }
+                    result = insert_comment(db_conn, comm)
+                    print "Comment insert result: ", result
     except Exception as e:
         print e.message
+
+def stage_one(db, subreddit, t1, t2):
+    subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
+    return list(subs)
 
 def insert_submission(db, submission):
     if db.Submissions.find_one({'id': submission['id']}):
@@ -99,8 +110,7 @@ def cleanDB(db):
 def main():
     reddit = load_credentials()
     db_conn = db_connect()
-    cleanDB(db_conn)
-    app = Flask(__name__)
+    # cleanDB(db_conn)
 
     # Second way I tried to do the refresh. This time I tried sending all the parameters
     # also didn;t work with multiple parameters at once.
@@ -117,6 +127,7 @@ def main():
     while True:
         time.sleep(10)
         make_call(reddit, db_conn, "python")
+        make_call(reddit, db_conn, "romania")
         time.sleep(50)
 
 if __name__ == "__main__": main()
