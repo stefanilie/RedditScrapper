@@ -9,6 +9,7 @@ import time
 import SetInterval
 import datetime
 import calendar
+import pymongo
 from pymongo import MongoClient
 
 def load_credentials():
@@ -85,6 +86,10 @@ def insert_comment(db, comment):
         result = db.Comments.insert_one(comment)
         return result
 
+def index_comments(db):
+    db.Submissions.create_index([("title", pymongo.TEXT), ("created", pymongo.ASCENDING)], name="submissions_index")
+    db.Comments.create_index([("body", pymongo.TEXT), ("created", pymongo.ASCENDING)], name="comment_index")
+    
 def db_connect():
     try:
         client = MongoClient()
@@ -115,6 +120,7 @@ def cleanDB(db):
 def main():
     reddit = load_credentials()
     db_conn = db_connect()
+    index_comments(db_conn)
     # cleanDB(db_conn)
 
     # Second way I tried to do the refresh. This time I tried sending all the parameters
