@@ -60,6 +60,7 @@ class Scrapper:
                             'id': comment.id,
                             'body': comment.body,
                             'sub_id': sub.id,
+                            'subreddit': subreddit,
                             'created': int(comment.created)
                         }
                         result = self.insert_comment(comm)
@@ -70,11 +71,13 @@ class Scrapper:
     def stage_one(self, subreddit, t1, t2, kwd=None):
         if kwd is not None:
             # subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}}, {"$text": {"$search": str(kwd)}})
-            subs = self.db_conn.Submissions.find({"$text": {"$search": str(kwd)}})
-            return list(subs)
+            subs = self.db_conn.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}, "$text": {"$search": str(kwd)}})
+            comms = self.db_conn.Comments.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}, "$text": {"$search": str(kwd)}})
+            return list(subs)+list(comms)
         else:
+            comms = self.db_conn.Comments.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
             subs = self.db_conn.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
-            return list(subs)
+            return list(subs)+list(comms)
 
     def insert_submission(self, submission):
         if self.db_conn.Submissions.find_one({'id': submission['id']}):
@@ -119,6 +122,6 @@ class Scrapper:
         t.start()
         return t
 
-    def cleanDB(db):
-        db.Comments.remove({})
-        db.Submissions.remove({})
+    def cleanDB(self):
+        self.db_conn.Comments.remove({})
+        self.db_conn.Submissions.remove({})

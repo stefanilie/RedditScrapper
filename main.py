@@ -3,7 +3,7 @@ import time
 
 def main():
     scrapperObj = Scrapper()
-    scrapperObj.make_call("python")
+    scrapperObj.cleanDB()
     # scrapperObj.make_call("romania")
     # reddit = load_credentials()
     # db_conn = db_connect()
@@ -22,10 +22,10 @@ def main():
 
     # Finally, I gave up and did a very stupid - though working - way of
     # handling this task.
-    # while True:
-    #     time.sleep(10)
-    #     scrapperObj.make_call(reddit, db_conn, "python")
-    #     scrapperObj.make_call(reddit, db_conn, "romania")
-    #     time.sleep(50)
+    while True:
+        time.sleep(20)
+        scrapperObj.make_call("python")
+        scrapperObj.make_call("romania")
+        time.sleep(100)
 
 if __name__ == "__main__": main()
