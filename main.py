@@ -1,8 +1,8 @@
-from scrapper import Scrapper
 import time
+import scrapper
 
 def main():
-    scrapperObj = Scrapper()
+    scrapperObj = scrapper.Scrapper()
     scrapperObj.cleanDB()
     # scrapperObj.make_call("romania")
     # reddit = load_credentials()

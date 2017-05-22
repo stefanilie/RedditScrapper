@@ -1,16 +1,15 @@
 import json
 import praw
-from praw.models import MoreComments
-import config
 import time
-import threading
 import sched
-import time
-import SetInterval
-import datetime
-import calendar
+import config
 import pymongo
-from pymongo import MongoClient
+import calendar
+import datetime
+import threading
+
+import SetInterval
+
 
 class Scrapper:
     def __init__(self):
@@ -31,7 +30,6 @@ class Scrapper:
                             user_agent = config.USER_AGENT,
                             username = config.USERNAME,
                             password = config.PASSWORD)
-        print "i was here"
         return reddit
 
 
@@ -55,7 +53,7 @@ class Scrapper:
                 result = self.insert_submission(submission)
                 print "Insert result: ", result
                 for comment in sub.comments.list():
-                    if not isinstance(comment, MoreComments):
+                    if not isinstance(comment, praw.models.MoreComments):
                         comm = {
                             'id': comment.id,
                             'body': comment.body,
@@ -101,7 +99,7 @@ class Scrapper:
 
     def db_connect(self):
         try:
-            client = MongoClient()
+            client = pymongo.MongoClient()
             db = client.reddit
             return db
         except Exception as e:
