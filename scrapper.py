@@ -16,6 +16,16 @@ class Scrapper:
         self.db_conn = self.db_connect()
         self.reddit = self.load_credentials()
 
+    """
+    Authenticates the application with reddit servers.
+    In order to do this, it gathers all the credentials needed for
+    the process from the accounts.json file.
+    The accounts file is part of the .gitignore file, due to security and
+    best practice reasons.
+
+    :return: praw object with which all the API calls are later made.
+    :return: type JSON object
+    """
     def load_credentials(self):
         with open("passwords/accounts.json") as json_data:
             d = json.load(json_data)
@@ -32,13 +42,36 @@ class Scrapper:
                             password = config.PASSWORD)
         return reddit
 
+    """
+    Connects the application to the existing MongoDB daemon.
 
+    :return: MongoDB db instance.
+    """
+    def db_connect(self):
+        try:
+            client = pymongo.MongoClient()
+            db = client.reddit
+            return db
+        except Exception as e:
+            print e.message
+
+    """
+    The backbone of the application. Using the praw object, it calls
+    certain methods from the reddit public API. First, we get the submissions
+    from one subreddit, insert them into the db and after it does the same
+    for the comments.
+
+    :param subreddit: the name of the subreddit we want to scrap data from
+    :param subreddit type: string
+    """
     def make_call(self, subreddit):
         try:
             #First, get the submisions for the last 2 days (for now...)
             past = datetime.datetime.utcnow() + datetime.timedelta(days=-2)
             past_ut = calendar.timegm(past.timetuple())
-            arr_submissions = self.reddit.subreddit(subreddit).submissions(past_ut, int(time.time()))
+            arr_submissions = self.reddit.subreddit(subreddit).submissions(
+                past_ut, int(time.time())
+            )
 
             for sub in arr_submissions:
                 print "\n\nTitle: ", sub.title
@@ -66,17 +99,72 @@ class Scrapper:
         except Exception as e:
             print e.message
 
+
+    """
+    Created in the first place to handle the requirements from stage one,
+    it also later developed a way to handle both the stages.
+    For three parameters, it queries the DB for all the submissions
+    between t1 and t2 (timestamps) in the provided subreddit.
+    In the case of four parameters, it searches also for a certain keyword.
+
+    :param subreddit: name of subreddit by which to search submissions/comments
+    :param subreddit type: string
+
+    :param t1: timestamp from when it can start looking for
+    :param t1 type: int (timestamp)
+
+    :param t2: higher-limit timestamp
+    :param t2: int (timestamp)
+
+    :param kwd=None: keyword that returned posts contain
+    :param kwd type: string
+    """
     def stage_one(self, subreddit, t1, t2, kwd=None):
         if kwd is not None:
-            # subs = db.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}}, {"$text": {"$search": str(kwd)}})
-            subs = self.db_conn.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}, "$text": {"$search": str(kwd)}})
-            comms = self.db_conn.Comments.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}, "$text": {"$search": str(kwd)}})
+            subs = self.db_conn.Submissions.find({
+                'subreddit': subreddit,
+                "created": {
+                    "$gt": int(t1),
+                    "$lt": int(t2)
+                },
+                "$text": {"$search": str(kwd)}
+            })
+            comms = self.db_conn.Comments.find({
+                'subreddit': subreddit,
+                "created": {
+                    "$gt": int(t1),
+                    "$lt": int(t2)
+                },
+                "$text": {"$search": str(kwd)}
+            })
             return list(subs)+list(comms)
         else:
-            comms = self.db_conn.Comments.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
-            subs = self.db_conn.Submissions.find({'subreddit': subreddit, "created": {"$gt": int(t1), "$lt": int(t2)}})
+            comms = self.db_conn.Comments.find({
+                'subreddit': subreddit,
+                "created": {
+                    "$gt": int(t1),
+                    "$lt": int(t2)
+                }
+            })
+            subs = self.db_conn.Submissions.find({
+                'subreddit': subreddit,
+                "created": {
+                    "$gt": int(t1),
+                    "$lt": int(t2)
+                }
+            })
             return list(subs)+list(comms)
 
+
+    """
+    Inserts a provided submission object into the Submissions collection.
+
+    :param submission: item created from parsing a reddit api object
+    :param submission type: JSON object
+
+    :return: code for submission if it already exists, else InsertOneResult obj.
+    :return type: InsertOneResult or string
+    """
     def insert_submission(self, submission):
         if self.db_conn.Submissions.find_one({'id': submission['id']}):
             print "submission already exists"
@@ -85,6 +173,15 @@ class Scrapper:
             result = self.db_conn.Submissions.insert_one(submission)
             return result
 
+    """
+    Inserts the provided comment object in the Comments collection.
+
+    :param comment: comment created with the structure from make_call.
+    :param comment type: JSON object
+
+    :return: code for comment if it already exists, else InsertOneResult obj.
+    :return type: InsertOneResult or string
+    """
     def insert_comment(self, comment):
         if self.db_conn.Comments.find_one({'id': comment['id']}):
             print "comment already exists"
@@ -93,24 +190,35 @@ class Scrapper:
             result = self.db_conn.Comments.insert_one(comment)
             return result
 
+
+    """
+    Indexes the comments in order to provide a way to search for keywords.
+    Uses default MongoDB indexer.
+    """
     def index_comments(self):
-        self.db_conn.Submissions.create_index([("title", pymongo.TEXT), ("created", pymongo.ASCENDING)], name="submissions_index")
-        self.db_conn.Comments.create_index([("body", pymongo.TEXT), ("created", pymongo.ASCENDING)], name="comment_index")
-
-    def db_connect(self):
-        try:
-            client = pymongo.MongoClient()
-            db = client.reddit
-            return db
-        except Exception as e:
-            print e.message
-
-    # One of the first ways of trying to do the "refresh"
-    # Didn't work because - I think - it wasn't able to call the second time the
-    # method alongside it's parameters.
-    # File "/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.py", line 1082, in run
-    #       self.function(*self.args, **self.kwargs)
-    # TypeError: 'NoneType' object is not callable
+        self.db_conn.Submissions.create_index(
+            [
+                ("title", pymongo.TEXT),
+                ("created", pymongo.ASCENDING)
+            ],
+            name="submissions_index"
+        )
+        self.db_conn.Comments.create_index(
+            [
+                ("body", pymongo.TEXT),
+                ("created", pymongo.ASCENDING)
+            ],
+            name="comment_index"
+        )
+    """
+    One of the first ways of trying to do the "refresh"
+    Didn't work because - I think - it wasn't able to call the second time the
+    method alongside it's parameters.
+    File "/System/Library/Frameworks/Python.framework/Versions/
+        2.7/lib/python2.7/threading.py", line 1082, in run
+          self.function(*self.args, **self.kwargs)
+    TypeError: 'NoneType' object is not callable
+    """
     def NOTUSED_set_interval(func, sec):
         pdb.set_trace()
         def function_wrapper():
@@ -120,6 +228,9 @@ class Scrapper:
         t.start()
         return t
 
+    """
+    Deletes all data from the DB.
+    """
     def cleanDB(self):
         self.db_conn.Comments.remove({})
         self.db_conn.Submissions.remove({})

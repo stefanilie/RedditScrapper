@@ -8,3 +8,10 @@ class TestFunctions:
         self.db_conn = MagicMock()
         scrapper.Scrapper.index_comments()
         self.db_conn.assertCalledWith()
+
+import unittest
+import scrapper
+
+class ScrapperTestCase(unittest.TestCase):
+    def setUp(self):
+        self.
