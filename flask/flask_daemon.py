@@ -1,13 +1,35 @@
+import os
 import sys
+import pdb
 import pprint
 from flask import Flask, request
 
-sys.path.append('../scrapper/')
-from scrapper import Scrapper
+"""
+This doesn't work using docker because it can't see the scrapper folder.
+(Pdb) sys.path
+[
+    '/flask',
+    '/usr/local/lib/python27.zip',
+    '/usr/local/lib/python2.7',
+    '/usr/local/lib/python2.7/plat-linux2',
+    '/usr/local/lib/python2.7/lib-tk',
+    '/usr/local/lib/python2.7/lib-old',
+    '/usr/local/lib/python2.7/lib-dynload',
+    '/usr/local/lib/python2.7/site-packages',
+    '../scrapper/'
+]
+
+Need to make Docker access the files from scrapper folder.
+"""
+MYDIR = os.path.dirname(__file__)
+pdb.set_trace()
+sys.path.append(os.path.join(MYDIR, "../scrapper/"))
+
+import scrapper
 
 
 app = Flask(__name__)
-scrapper = Scrapper()
+scrapper = scrapper.Scrapper()
 
 @app.route('/')
 def hello_world():
