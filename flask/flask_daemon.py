@@ -1,11 +1,13 @@
+import sys
 import pprint
 from flask import Flask, request
 
-import scrapper
+sys.path.append('../scrapper/')
+from scrapper import Scrapper
 
 
 app = Flask(__name__)
-scrapper = scrapper.Scrapper()
+scrapper = Scrapper()
 
 @app.route('/')
 def hello_world():

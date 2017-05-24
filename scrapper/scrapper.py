@@ -63,11 +63,14 @@ class Scrapper:
 
     :param subreddit: the name of the subreddit we want to scrap data from
     :param subreddit type: string
+
+    :return: True if everything goes well, False if errors are encountered.
     """
     def make_call(self, subreddit):
         try:
-            #First, get the submisions for the last 2 days (for now...)
-            past = datetime.datetime.utcnow() + datetime.timedelta(days=-2)
+            subreddit.decode('ascii')
+
+            past = datetime.datetime.now() + datetime.timedelta(days=-2)
             past_ut = calendar.timegm(past.timetuple())
             arr_submissions = self.reddit.subreddit(subreddit).submissions(
                 past_ut, int(time.time())
@@ -96,8 +99,13 @@ class Scrapper:
                         }
                         result = self.insert_comment(comm)
                         print "Comment insert result: ", result
+            return True
         except Exception as e:
             print e.message
+            return False
+        except UnicodeDecodeError:
+            print "it was not a ascii-encoded unicode string"
+            return False
 
 
     """
@@ -118,42 +126,53 @@ class Scrapper:
 
     :param kwd=None: keyword that returned posts contain
     :param kwd type: string
+
+    :return: List of comments and submissions or False in case of bad params.
     """
     def stage_one(self, subreddit, t1, t2, kwd=None):
-        if kwd is not None:
-            subs = self.db_conn.Submissions.find({
-                'subreddit': subreddit,
-                "created": {
-                    "$gt": int(t1),
-                    "$lt": int(t2)
-                },
-                "$text": {"$search": str(kwd)}
-            })
-            comms = self.db_conn.Comments.find({
-                'subreddit': subreddit,
-                "created": {
-                    "$gt": int(t1),
-                    "$lt": int(t2)
-                },
-                "$text": {"$search": str(kwd)}
-            })
-            return list(subs)+list(comms)
-        else:
-            comms = self.db_conn.Comments.find({
-                'subreddit': subreddit,
-                "created": {
-                    "$gt": int(t1),
-                    "$lt": int(t2)
-                }
-            })
-            subs = self.db_conn.Submissions.find({
-                'subreddit': subreddit,
-                "created": {
-                    "$gt": int(t1),
-                    "$lt": int(t2)
-                }
-            })
-            return list(subs)+list(comms)
+        try:
+            subreddit.decode('ascii')
+            if isinstance(t1, int) and isinstance(t2, int):
+                if kwd is not None:
+                    kwd.decode('ascii')
+                    subs = self.db_conn.Submissions.find({
+                        'subreddit': subreddit,
+                        "created": {
+                            "$gt": int(t1),
+                            "$lt": int(t2)
+                        },
+                        "$text": {"$search": str(kwd)}
+                    })
+                    comms = self.db_conn.Comments.find({
+                        'subreddit': subreddit,
+                        "created": {
+                            "$gt": int(t1),
+                            "$lt": int(t2)
+                        },
+                        "$text": {"$search": str(kwd)}
+                    })
+                    return list(subs)+list(comms)
+                else:
+                    comms = self.db_conn.Comments.find({
+                        'subreddit': subreddit,
+                        "created": {
+                            "$gt": int(t1),
+                            "$lt": int(t2)
+                        }
+                    })
+                    subs = self.db_conn.Submissions.find({
+                        'subreddit': subreddit,
+                        "created": {
+                            "$gt": int(t1),
+                            "$lt": int(t2)
+                        }
+                    })
+                    return list(subs)+list(comms)
+            else:
+                return False
+        except UnicodeDecodeError:
+            print "it was not a ascii-encoded unicode string"
+            return False
 
 
     """

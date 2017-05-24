@@ -3,6 +3,8 @@ import scrapper
 
 def main():
     scrapperObj = scrapper.Scrapper()
+    print "Running scrapper..."
+    # scrapperObj.cleanDB()
     """
     Second way I tried to do the refresh.
     This time I tried sending all parameters, also didn't work with multiple
