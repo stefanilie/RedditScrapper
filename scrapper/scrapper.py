@@ -1,3 +1,4 @@
+import os
 import json
 import praw
 import time
@@ -13,6 +14,7 @@ import SetInterval
 
 class Scrapper:
     def __init__(self):
+        config.MYDIR = os.path.dirname(__file__)
         self.db_conn = self.db_connect()
         self.reddit = self.load_credentials()
 
@@ -27,7 +29,7 @@ class Scrapper:
     :return: type JSON object
     """
     def load_credentials(self):
-        with open("passwords/accounts.json") as json_data:
+        with open(os.path.join(config.MYDIR, "passwords/accounts.json")) as json_data:
             d = json.load(json_data)
             config.CLIENT_ID = d["client_id"]
             config.CLIENT_SECRET = d["client_secret"]
@@ -66,14 +68,14 @@ class Scrapper:
 
     :return: True if everything goes well, False if errors are encountered.
     """
-    def make_call(self, subreddit):
+    def make_call(self, subreddit, timestamp):
         try:
             subreddit.decode('ascii')
 
             past = datetime.datetime.now() + datetime.timedelta(days=-2)
             past_ut = calendar.timegm(past.timetuple())
             arr_submissions = self.reddit.subreddit(subreddit).submissions(
-                past_ut, int(time.time())
+                int(timestamp), int(time.time())
             )
 
             for sub in arr_submissions:

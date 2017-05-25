@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+import os
+import sys
 import unittest
 from mock import MagicMock
 
+MYDIR = os.path.dirname(__file__)
+sys.path.append(os.path.join(MYDIR, "../scrapper/"))
 import scrapper
 
 class ScrapperTestCase(unittest.TestCase):
@@ -9,7 +14,7 @@ class ScrapperTestCase(unittest.TestCase):
 
     def test_make_call(self):
         scrapperObj = scrapper.Scrapper()
-        result = scrapperObj.make_call("¤©«±¶µ")
+        result = scrapperObj.make_call("¤©«±¶µ", 1495490048)
         self.assertEqual(result, False)
 
     def test_stage_one(self):
