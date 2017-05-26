@@ -6,12 +6,6 @@ def main():
                     " from you wish to start the scrapping: ")
     scrapperObj = scrapper.Scrapper()
 
-    noSubreddits = raw_input("Insert the number of subreddits"+
-                            " you want to gather data from: ")
-    arrSubreddits = []
-    for n in range(int(noSubreddits)):
-        subreddit = raw_input("Subreddit no "+str(n)+": ")
-        arrSubreddits.append(str(subreddit))
     print "Running scrapper..."
     # scrapperObj.cleanDB()
     """
@@ -31,7 +25,7 @@ def main():
     handling this task.
     """
     while True:
-        for sub in arrSubreddits:
+        for sub in scrapperObj.subreddits:
             scrapperObj.make_call(sub, int(user_timestamp))
         time.sleep(120)
 

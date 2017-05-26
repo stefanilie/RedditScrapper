@@ -17,6 +17,18 @@ class Scrapper:
         config.MYDIR = os.path.dirname(__file__)
         self.db_conn = self.db_connect()
         self.reddit = self.load_credentials()
+        self.subreddits = self.load_input()
+
+    """
+    Loads the list of to be analysed subreddits.
+
+    :return: string array of subreddits.
+    :return type: array
+    """
+    def load_input(self):
+        with open(os.path.join(config.MYDIR, "input.json")) as json_data:
+            d = json.load(json_data)
+            return d["subreddits"]
 
     """
     Authenticates the application with reddit servers.
