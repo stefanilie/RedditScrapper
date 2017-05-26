@@ -11,4 +11,4 @@ ADD . /scrapper
 RUN pip install -r requirements.txt
 
 # Run main.py when the container launches
-CMD ["python", "main.py"]
+CMD ["python", "main.py", "1494930592"]
