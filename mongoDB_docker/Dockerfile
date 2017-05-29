@@ -1,21 +1,29 @@
-FROM ubuntu
+# We first setup the ubuntu environment
+FROM ubuntu:14.04
 
-RUN apt-get update && \
-      apt-get -y install sudo
+# Installing wget
+FROM ubuntu:14.04
+RUN  apt-get update \
+  && apt-get install -y wget \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
+RUN apt-get install -y wget
 
-USER docker
+# From here we start installing the mongodb instance based on the tutorial from
+# the Docker website.
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - apt-get update
 
-RUN \
-   apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
-   echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list && \
-   apt-get update && \
-   apt-get install -y mongodb-org
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN echo "deb http://repo.mongodb.org/apt/ubuntu $(cat /etc/lsb-release | grep DISTRIB_CODENAME | cut -d= -f2)/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+RUN apt-get update && apt-get install -y mongodb-org
 
-VOLUME ["/data/db"]
-WORKDIR /data
+# Creating the data folder
+RUN mkdir -p /data/db
 
+# Exposing the port
 EXPOSE 27017
 
-CMD ["mongod"]
+# Setting up the entrypoint
+ENTRYPOINT ["/usr/bin/mongod"]
