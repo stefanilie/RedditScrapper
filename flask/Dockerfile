@@ -1,5 +1,8 @@
-# Use an official Python runtime as a base image
-FROM python:2.7-slim
+# We first setup the ubuntu environment
+FROM ubuntu:14.04
+
+RUN apt-get update -y
+RUN apt-get install -y python-pip python-dev build-essential
 
 # Set the working directory to /flask
 WORKDIR /flask
@@ -16,5 +19,7 @@ EXPOSE 80
 # Define environment variable
 ENV NAME World
 
+ENTRYPOINT ["python"]
+
 # Run flask_daemon.py when the container launches
-CMD ["python", "flask_daemon.py"]
+CMD ["flask_daemon.py"]

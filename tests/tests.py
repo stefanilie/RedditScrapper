@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import unittest
 import mock
+import unittest
 
 MYDIR = os.path.dirname(__file__)
 sys.path.append(os.path.join(MYDIR, "../scrapper/"))
