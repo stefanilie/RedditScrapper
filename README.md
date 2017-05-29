@@ -22,29 +22,24 @@ First up, we need to clone the project
 
 `git clone https://github.com/stefanilie/RedditScrapper.git`
 
-You also have to install all the dependencies. So for that,
+You also have to install all the dependencies. So for that, `cd scrapper/ && pip install -r requirements.txt`
 
-`cd scrapper/ && pip install -r requirements.txt`
-
-Second step, we need to start up the MongoDB Daemon:
-
-`mongod --dbpath RedditScrapper/scrapper/data/db`
+Second step, we need to start up the MongoDB Daemon: `mongod --dbpath RedditScrapper/scrapper/data/db`
 
 Please pay attention to where you have your MongoDB instance
 installed locally. Usually it's `/data/db`
 
-Then, we have to start up the scrapper by:
+Prior to starting the scrapper, you need to decide what subreddits you want to scrap.
+You can do this by editing the `input.py` file, that can be found in `/scrapper`
 
-`python main.py`
+Then, we have to start up the scrapper by: `python main.py`
 
 In a separate terminal window, we need to start up the Flask daemon.
 First up though, we need to
 
 `cd ../flask && export FLASK_APP=flask_daemon.py`
 
-After that, we simply have to
-
-`flask run`
+After that, we simply have to `flask run`
 
 From then on, you can simply access
 
