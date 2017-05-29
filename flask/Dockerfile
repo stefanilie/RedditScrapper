@@ -8,7 +8,7 @@ RUN apt-get install -y python-pip python-dev build-essential
 WORKDIR /flask
 
 # Copy the current directory contents into the container at /flask
-ADD . /flask
+ADD /flask /flask
 
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
