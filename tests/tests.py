@@ -18,7 +18,7 @@ class ScrapperTestCase(unittest.TestCase):
         self.assertEqual(result, False)
 
     def test_make_call(self):
-        test_json = {
+        test_json = [{
             "id": "1234123",
             "title": "This is a test title",
             "selftext": "Test is a test for testing tests.",
@@ -30,15 +30,12 @@ class ScrapperTestCase(unittest.TestCase):
                 "this is the second commment",
                 "this is the third comment"
             ]
-        }
-        mock_reddit = mock.patch("scrapper.Scrapper.reddit.subreddit").start()
-        mock_insert = mock.patch("scrapper.Scrapper.insert_submission").start()
-        mock_insert_comment = mock.patch("scrapper.Scrapper.insert_comment").start()
-        mock_reddit.return_value = test_json
-        mock_insert.return_value = "6ejt4t"
-        mock_insert_comment.return_value = "3fas4gr"
-        scrapperObj = scrapper.Scrapper()
-        result = scrapperObj.make_call("python", 1495490048)
+            }]
+
+        mock_reddit = scrapper.Scrapper()
+        mock_reddit.reddit.subreddit = mock.MagicMock(return_value = test_json)
+        result = mock_reddit.make_call("python", 1495490048)
+
         self.assertEqual(result, False)
 
     def test_stage_one(self):

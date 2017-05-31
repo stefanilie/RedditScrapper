@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import praw
 import time
@@ -114,11 +115,11 @@ class Scrapper:
                         result = self.insert_comment(comm)
                         print "Comment insert result: ", result
             return True
-        except Exception as e:
-            print e.message
-            return False
         except UnicodeDecodeError:
             print "it was not a ascii-encoded unicode string"
+            return False
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
             return False
 
 
