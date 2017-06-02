@@ -8,3 +8,4 @@ To do list
 5. ~~Double check Dockerfile~~
 6. ~~Properly indent code.~~
 7. ~~Write documentation.~~
+8. Move all docstrings inside method body.
